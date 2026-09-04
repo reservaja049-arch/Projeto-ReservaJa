@@ -21,6 +21,7 @@ interface GoalCardProps {
   onDelete: (id: string) => void;
   onAddMoney: (id: string) => void;
   onRemoveMoney: (id: string) => void;
+  onClearHistory?: (id: string) => void;
   currency: string;
   customBanks?: Record<string, string>;
   extraBanks?: CustomBankEntry[];
@@ -48,6 +49,7 @@ export function GoalCard({
   onDelete,
   onAddMoney,
   onRemoveMoney,
+  onClearHistory,
   currency,
   customBanks,
   extraBanks,
@@ -252,9 +254,25 @@ export function GoalCard({
             )}
             {goal.history && goal.history.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-700/50">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
-                  Histórico
-                </h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    Histórico
+                  </h4>
+                  {onClearHistory && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClearHistory(goal.id);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                      title="Limpar histórico da meta"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      <span>Limpar Histórico</span>
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                   {[...goal.history].reverse().map((record) => (
                     <div

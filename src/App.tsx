@@ -51,6 +51,7 @@ export default function App() {
     deleteGoal,
     addMoney,
     removeMoney,
+    clearHistory,
     importData,
     isLoaded,
     isAuthenticated,
@@ -85,6 +86,7 @@ export default function App() {
             onDeleteGoal={deleteGoal}
             onAddMoney={addMoney}
             onRemoveMoney={removeMoney}
+            onClearHistory={clearHistory}
           />
         );
       case "stats":

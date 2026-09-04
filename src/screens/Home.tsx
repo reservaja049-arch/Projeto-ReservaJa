@@ -25,6 +25,7 @@ interface HomeProps {
   onDeleteGoal: (id: string) => void;
   onAddMoney: (id: string, amount: number) => void;
   onRemoveMoney: (id: string, amount: number) => void;
+  onClearHistory?: (id: string) => void;
 }
 
 export function Home({
@@ -35,6 +36,7 @@ export function Home({
   onDeleteGoal,
   onAddMoney,
   onRemoveMoney,
+  onClearHistory,
 }: HomeProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<string>("newest");
@@ -69,6 +71,7 @@ export function Home({
   const [removeMoneyAmount, setRemoveMoneyAmount] = useState("");
 
   const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
+  const [goalToClearHistory, setGoalToClearHistory] = useState<string | null>(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
 
   const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
@@ -569,6 +572,7 @@ export function Home({
                 setActiveRemoveMoneyGoal(id);
                 setIsRemoveMoneyModalOpen(true);
               }}
+              onClearHistory={(id) => setGoalToClearHistory(id)}
             />
           ))}
         </div>
@@ -938,6 +942,40 @@ export function Home({
               }}
             >
               Excluir
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Clear History Confirmation Modal */}
+      <Modal
+        isOpen={!!goalToClearHistory}
+        onClose={() => setGoalToClearHistory(null)}
+        title="Limpar Histórico"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-300">
+            Tem certeza que deseja limpar todo o histórico desta meta? Todas as movimentações registradas serão apagadas, mantendo o saldo atual intacto. Esta ação não pode ser desfeita.
+          </p>
+          <div className="flex gap-3 pt-2">
+            <Button
+              variant="ghost"
+              fullWidth
+              onClick={() => setGoalToClearHistory(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={() => {
+                if (goalToClearHistory && onClearHistory) {
+                  onClearHistory(goalToClearHistory);
+                  setGoalToClearHistory(null);
+                }
+              }}
+            >
+              Limpar Histórico
             </Button>
           </div>
         </div>

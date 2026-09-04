@@ -209,6 +209,10 @@ export function useStore() {
     }));
   }, [goals, saveGoals]);
 
+  const clearHistory = useCallback((goalId: string) => {
+    saveGoals(goals.map((goal) => (goal.id === goalId ? { ...goal, history: [] } : goal)));
+  }, [goals, saveGoals]);
+
   const importData = useCallback((data: string) => {
     try {
       const parsed = JSON.parse(data);
@@ -233,6 +237,7 @@ export function useStore() {
     deleteGoal,
     addMoney,
     removeMoney,
+    clearHistory,
     importData,
     isLoaded,
     isAuthenticated,
