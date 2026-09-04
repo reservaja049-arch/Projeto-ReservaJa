@@ -48,6 +48,7 @@ export default function App() {
     setSettings,
     addGoal,
     updateGoal,
+    updateGoalShortcuts,
     deleteGoal,
     addMoney,
     removeMoney,
@@ -83,6 +84,7 @@ export default function App() {
             profile={profile}
             onAddGoal={addGoal}
             onUpdateGoal={updateGoal}
+            onUpdateGoalShortcuts={updateGoalShortcuts}
             onDeleteGoal={deleteGoal}
             onAddMoney={addMoney}
             onRemoveMoney={removeMoney}

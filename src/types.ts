@@ -4,6 +4,19 @@ export interface GoalHistory {
   amount: number;
 }
 
+export interface GoalShortcut {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export const DEFAULT_GOAL_SHORTCUTS: GoalShortcut[] = [
+  { id: '1', name: 'Meu Salário', amount: 500 },
+  { id: '2', name: 'Salário da Esposa', amount: 500 },
+  { id: '3', name: 'Dinheiro do IPTV', amount: 150 },
+  { id: '4', name: 'Outros Dinheiros', amount: 100 },
+];
+
 export interface Goal {
   id: string;
   name: string;
@@ -16,6 +29,7 @@ export interface Goal {
   bank?: string;
   createdAt: string; // ISO string
   history: GoalHistory[];
+  shortcuts?: GoalShortcut[];
 }
 
 export interface CustomBankEntry {

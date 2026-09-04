@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Goal, Profile, Settings } from './types';
+import { Goal, Profile, Settings, GoalShortcut, DEFAULT_GOAL_SHORTCUTS } from './types';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from './lib/supabase';
 
@@ -163,12 +163,17 @@ export function useStore() {
       createdAt: new Date().toISOString(),
       savedAmount: 0,
       history: [],
+      shortcuts: goal.shortcuts && goal.shortcuts.length > 0 ? goal.shortcuts : DEFAULT_GOAL_SHORTCUTS,
     };
     saveGoals([...goals, newGoal]);
   }, [goals, saveGoals]);
 
   const updateGoal = useCallback((id: string, updates: Partial<Omit<Goal, 'id' | 'createdAt' | 'savedAmount' | 'history'>>) => {
     saveGoals(goals.map((goal) => (goal.id === id ? { ...goal, ...updates } : goal)));
+  }, [goals, saveGoals]);
+
+  const updateGoalShortcuts = useCallback((goalId: string, shortcuts: GoalShortcut[]) => {
+    saveGoals(goals.map((goal) => (goal.id === goalId ? { ...goal, shortcuts } : goal)));
   }, [goals, saveGoals]);
 
   const deleteGoal = useCallback((id: string) => {
@@ -234,6 +239,7 @@ export function useStore() {
     setSettings: handleSetSettings,
     addGoal,
     updateGoal,
+    updateGoalShortcuts,
     deleteGoal,
     addMoney,
     removeMoney,

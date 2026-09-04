@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { Goal, Profile } from "../types";
+import { Goal, Profile, GoalShortcut, DEFAULT_GOAL_SHORTCUTS } from "../types";
 import { formatCurrency } from "../utils";
 import { GoalCard } from "../components/GoalCard";
+import { GoalShortcuts } from "../components/GoalShortcuts";
 import { Plus, Search, ArrowUpDown, Wallet } from "lucide-react";
 import { Button, Input } from "../components/ui";
 import { motion } from "motion/react";
@@ -26,6 +27,7 @@ interface HomeProps {
   onAddMoney: (id: string, amount: number) => void;
   onRemoveMoney: (id: string, amount: number) => void;
   onClearHistory?: (id: string) => void;
+  onUpdateGoalShortcuts?: (goalId: string, shortcuts: GoalShortcut[]) => void;
 }
 
 export function Home({
@@ -37,6 +39,7 @@ export function Home({
   onAddMoney,
   onRemoveMoney,
   onClearHistory,
+  onUpdateGoalShortcuts,
 }: HomeProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<string>("newest");
@@ -50,7 +53,16 @@ export function Home({
     ...(profile.extraBanks || []),
   ], [profile.extraBanks]);
 
-  const [goalForm, setGoalForm] = useState({
+  const [goalForm, setGoalForm] = useState<{
+    name: string;
+    targetAmount: string;
+    installments: string;
+    installmentValue: string;
+    imageUrl: string;
+    productUrl: string;
+    bank: string;
+    shortcuts: GoalShortcut[];
+  }>({
     name: "",
     targetAmount: "",
     installments: "1",
@@ -58,6 +70,7 @@ export function Home({
     imageUrl: "",
     productUrl: "",
     bank: "",
+    shortcuts: DEFAULT_GOAL_SHORTCUTS,
   });
 
   const [isMoneyModalOpen, setIsMoneyModalOpen] = useState(false);
@@ -229,6 +242,7 @@ export function Home({
         imageUrl: goalForm.imageUrl,
         productUrl: goalForm.productUrl,
         bank: goalForm.bank,
+        shortcuts: goalForm.shortcuts,
       });
     } else {
       onAddGoal({
@@ -239,6 +253,7 @@ export function Home({
         imageUrl: goalForm.imageUrl,
         productUrl: goalForm.productUrl,
         bank: goalForm.bank,
+        shortcuts: goalForm.shortcuts,
       });
     }
 
@@ -248,7 +263,16 @@ export function Home({
   const closeGoalModal = () => {
     setIsGoalModalOpen(false);
     setEditingGoal(null);
-    setGoalForm({ name: "", targetAmount: "", installments: "1", installmentValue: "", imageUrl: "", productUrl: "", bank: "" });
+    setGoalForm({
+      name: "",
+      targetAmount: "",
+      installments: "1",
+      installmentValue: "",
+      imageUrl: "",
+      productUrl: "",
+      bank: "",
+      shortcuts: DEFAULT_GOAL_SHORTCUTS,
+    });
   };
 
   const handleAddMoney = (e: React.FormEvent) => {
@@ -560,6 +584,7 @@ export function Home({
                   imageUrl: g.imageUrl,
                   productUrl: g.productUrl || "",
                   bank: g.bank || "",
+                  shortcuts: g.shortcuts && g.shortcuts.length > 0 ? g.shortcuts : DEFAULT_GOAL_SHORTCUTS,
                 });
                 setIsGoalModalOpen(true);
               }}
@@ -764,6 +789,19 @@ export function Home({
               setGoalForm((prev) => ({ ...prev, imageUrl: e.target.value }))
             }
           />
+
+          {/* Atalhos Rápidos da Meta */}
+          <div className="pt-1">
+            <GoalShortcuts
+              shortcuts={goalForm.shortcuts}
+              currency={profile.currency}
+              onSelectAmount={() => {}}
+              onSaveShortcuts={(newShortcuts) =>
+                setGoalForm((prev) => ({ ...prev, shortcuts: newShortcuts }))
+              }
+            />
+          </div>
+
           <div className="pt-2">
             <Button type="submit" fullWidth>
               Salvar Meta
@@ -779,6 +817,21 @@ export function Home({
         title="Guardar Dinheiro"
       >
         <form onSubmit={handleAddMoney} className="space-y-4">
+          {activeMoneyGoal && (
+            <GoalShortcuts
+              shortcuts={goals.find((g) => g.id === activeMoneyGoal)?.shortcuts}
+              currency={profile.currency}
+              currentAmount={moneyAmount}
+              onSelectAmount={(amt) => setMoneyAmount(amt.toFixed(2))}
+              onSaveShortcuts={
+                onUpdateGoalShortcuts
+                  ? (newShortcuts) =>
+                      onUpdateGoalShortcuts(activeMoneyGoal, newShortcuts)
+                  : undefined
+              }
+            />
+          )}
+
           <Input
             label="Quanto deseja guardar?"
             type="number"
@@ -806,10 +859,30 @@ export function Home({
       >
         <form onSubmit={handleRemoveMoney} className="space-y-4">
           {activeRemoveMoneyGoal && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 -mt-2">
-              Saldo disponível: <strong className="text-gray-900 dark:text-white">{formatCurrency(goals.find(g => g.id === activeRemoveMoneyGoal)?.savedAmount || 0, profile.currency)}</strong>
-            </p>
+            <>
+              <p className="text-sm text-gray-500 dark:text-gray-400 -mt-2">
+                Saldo disponível: <strong className="text-gray-900 dark:text-white">{formatCurrency(goals.find(g => g.id === activeRemoveMoneyGoal)?.savedAmount || 0, profile.currency)}</strong>
+              </p>
+
+              <GoalShortcuts
+                shortcuts={goals.find((g) => g.id === activeRemoveMoneyGoal)?.shortcuts}
+                currency={profile.currency}
+                currentAmount={removeMoneyAmount}
+                onSelectAmount={(amt) => {
+                  const maxVal = goals.find((g) => g.id === activeRemoveMoneyGoal)?.savedAmount || 0;
+                  const finalAmt = maxVal > 0 ? Math.min(amt, maxVal) : amt;
+                  setRemoveMoneyAmount(finalAmt.toFixed(2));
+                }}
+                onSaveShortcuts={
+                  onUpdateGoalShortcuts
+                    ? (newShortcuts) =>
+                        onUpdateGoalShortcuts(activeRemoveMoneyGoal, newShortcuts)
+                    : undefined
+                }
+              />
+            </>
           )}
+
           <Input
             label="Quanto deseja retirar?"
             type="number"
@@ -887,6 +960,29 @@ export function Home({
               </p>
             )}
           </div>
+
+          {shortcutGoalId && (
+            <GoalShortcuts
+              shortcuts={goals.find((g) => g.id === shortcutGoalId)?.shortcuts}
+              currency={profile.currency}
+              currentAmount={shortcutAmount}
+              onSelectAmount={(amt) => {
+                if (shortcutAction === "remove") {
+                  const maxVal = goals.find((g) => g.id === shortcutGoalId)?.savedAmount || 0;
+                  const finalAmt = maxVal > 0 ? Math.min(amt, maxVal) : amt;
+                  setShortcutAmount(finalAmt.toFixed(2));
+                } else {
+                  setShortcutAmount(amt.toFixed(2));
+                }
+              }}
+              onSaveShortcuts={
+                onUpdateGoalShortcuts
+                  ? (newShortcuts) =>
+                      onUpdateGoalShortcuts(shortcutGoalId, newShortcuts)
+                  : undefined
+              }
+            />
+          )}
 
           <Input
             label="Valor"
