@@ -326,7 +326,12 @@ export function SettingsScreen({
             {/* Add new bank form */}
             <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Adicionar novo banco</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddExtraBank();
+                }
+              }}>
                 <Input
                   label="Nome do banco"
                   placeholder="Ex: Banco XYZ"
